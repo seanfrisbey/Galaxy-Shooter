@@ -3,25 +3,30 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private float _speed = 5;
-    [SerializeField] private float _fireRate = 0.25f;
     [SerializeField] private GameObject _singleLaserPrefab;
     [SerializeField] private GameObject _tripleLaserPrefab;
+    [SerializeField] private GameObject _explosionPrefab;
+    [SerializeField] private GameObject _shield;
 
+    private float _speed = 5;
+    private float _fireRate = 0.25f;
     private float _speedMulitplier = 1;
     private float _verticalPositiveLimit = -1.0f;
     private float _verticalNegativeLimit = -4.1f;
     private float _horizontalLimit = 9.5f;
     private float _lastFireTime;
     private float _lastTripleShotTime;
+    private int _lives = 3;
     private bool _canTripleShot;
+    private bool _hasShield;
+    private UIManager _uiManager;
 
     private void Start()
     {
-        _speed = 5;
-        _speedMulitplier = 1;
-        _fireRate = 0.25f;
+        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         transform.position = new Vector3(0.0f, 0.0f, 0.0f);
+
+        _uiManager?.UpdateLives(_lives);
 	}
 	
 	private void Update()
@@ -64,6 +69,23 @@ public class Player : MonoBehaviour
         _lastFireTime = Time.time;
     }
 
+    public void Damage()
+    {
+        if (_hasShield)
+        {
+            _hasShield = false;
+            _shield.SetActive(false);
+            return;
+        };
+
+        _lives--;
+        _uiManager?.UpdateLives(_lives);
+        if (_lives >= 1) return;
+
+        Instantiate(_explosionPrefab, transform.position, Quaternion.identity);
+        Destroy(gameObject);
+    }
+
     #region Powerups
     public void TripleShotPowerup()
     {
@@ -76,9 +98,15 @@ public class Player : MonoBehaviour
         _speedMulitplier = 2;
         StartCoroutine(SpeedPowerDownRoutine());
     }
+
+    public void ShieldPowerup()
+    {
+        _hasShield = true;
+        _shield.SetActive(true);
+    }
     #endregion
 
-    #region Routines
+    #region Coroutines
     private IEnumerator TripleShotPowerDownRoutine()
     {
         yield return new WaitForSeconds(5.0f);

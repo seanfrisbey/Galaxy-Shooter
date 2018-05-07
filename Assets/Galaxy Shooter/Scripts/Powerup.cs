@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.Eventing.Reader;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Powerup : MonoBehaviour
 {
@@ -22,6 +21,9 @@ public class Powerup : MonoBehaviour
                     player.SpeedPowerup();
                     break;
                 case 2:
+                    player.ShieldPowerup();
+                    break;
+                default:
                     break;
             }
         }
